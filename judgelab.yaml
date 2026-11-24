@@ -1,0 +1,8 @@
+judge: examples/mock_judge.py
+dataset: examples/sample_dataset.jsonl
+checks:
+  - position_bias
+  - verbosity_bias
+thresholds:
+  position_bias__flip_rate__lt: 0.15
+  verbosity_bias__longer_wins_rate__le: 0.60

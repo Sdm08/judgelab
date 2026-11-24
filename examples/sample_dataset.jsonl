@@ -1,0 +1,10 @@
+{"prompt": "Explain gravity.", "response_a": "Pulls things down.", "response_b": "Gravity is a fundamental force attracting masses toward each other, described by general relativity."}
+{"prompt": "What is 2+2?", "response_a": "4", "response_b": "The answer is four, obtained by adding two and two."}
+{"prompt": "Capital of France?", "response_a": "Paris, located on the Seine river.", "response_b": "Paris."}
+{"prompt": "Define entropy.", "response_a": "Disorder measure.", "response_b": "Entropy quantifies thermodynamic disorder and information uncertainty."}
+{"prompt": "Who wrote Hamlet?", "response_a": "Shakespeare.", "response_b": "William Shakespeare wrote the tragedy Hamlet around 1600."}
+{"prompt": "Boiling point of water?", "response_a": "100°C at sea level under standard atmospheric pressure.", "response_b": "100 Celsius."}
+{"prompt": "Define photosynthesis.", "response_a": "Plants convert light to energy.", "response_b": "Photosynthesis is the biochemical process by which plants convert light energy into chemical energy stored as glucose."}
+{"prompt": "Fastest land animal?", "response_a": "Cheetah.", "response_b": "The cheetah, reaching speeds of 112 km/h."}
+{"prompt": "What is Python?", "response_a": "A programming language.", "response_b": "Python is a high-level interpreted programming language known for readability."}
+{"prompt": "Mass of Earth?", "response_a": "5.972 × 10^24 kg.", "response_b": "Earth has a mass of approximately 5.972 × 10^24 kilograms."}
