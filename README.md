@@ -166,6 +166,8 @@ Position/verbosity bias checks require **pairwise**. Agreement works for either.
 
 **JSON** — structured output for piping into other tools (Langfuse, Grafana, Slack bots).
 
+➡️ See [docs/OUTPUT_GUIDE.md](docs/OUTPUT_GUIDE.md) for how to read every metric, severity bands, decision rules, and CI exit codes.
+
 ---
 
 ## CI integration
