@@ -1,7 +1,9 @@
 """Verbosity bias: does the longer response win more than length-neutral baseline?
 
-Measured as correlation between (len_a - len_b) and (judge picks A).
-Positive correlation => longer wins.
+Measured on *decisive* verdicts only (ties carry no length signal and are
+excluded from both the correlation and the longer-wins rate).
+
+Positive correlation => longer wins more often.
 """
 from __future__ import annotations
 
@@ -16,17 +18,27 @@ def run(examples, judge: Judge, **_) -> dict:
 
     length_deltas = []
     a_wins = []
+    n_total = 0
+    n_ties = 0
     for ex in examples:
         if ex.response_a is None or ex.response_b is None:
             continue
         v = judge.pairwise(ex.prompt, ex.response_a, ex.response_b).verdict
         if v is None:
             continue
+        n_total += 1
+        if v == Verdict.TIE:
+            n_ties += 1
+            continue
         length_deltas.append(len(ex.response_a) - len(ex.response_b))
         a_wins.append(1 if v == Verdict.A else 0)
 
     if len(length_deltas) < 2:
-        return {"error": "need >=2 examples with valid verdicts"}
+        return {
+            "error": "need >=2 non-tie examples with valid verdicts",
+            "n_total": n_total,
+            "n_ties": n_ties,
+        }
 
     x = np.array(length_deltas, dtype=float)
     y = np.array(a_wins, dtype=float)
@@ -36,22 +48,25 @@ def run(examples, judge: Judge, **_) -> dict:
     else:
         corr = float(np.corrcoef(x, y)[0, 1])
 
-    # also: among wins, what fraction were the longer response
+    comparable = sum(1 for d in length_deltas if d != 0)
     longer_wins = sum(
         1 for d, w in zip(length_deltas, a_wins) if (d > 0 and w == 1) or (d < 0 and w == 0)
     )
-    comparable = sum(1 for d in length_deltas if d != 0)
-    longer_win_rate = longer_wins / comparable if comparable else 0.0
+    longer_win_rate = longer_wins / comparable if comparable else None
 
     return {
         "length_win_correlation": corr,
         "longer_wins_rate": longer_win_rate,
-        "n": len(length_deltas),
+        "n_decisive": len(length_deltas),
+        "n_ties": n_ties,
+        "n_total": n_total,
         "interpretation": _interpret(longer_win_rate),
     }
 
 
-def _interpret(rate: float) -> str:
+def _interpret(rate: float | None) -> str:
+    if rate is None:
+        return "insufficient non-tie data to judge verbosity bias"
     if 0.45 <= rate <= 0.55:
         return "balanced — no clear verbosity bias"
     if rate > 0.70:

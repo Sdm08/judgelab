@@ -46,6 +46,32 @@ def test_verbosity_bias_detects_longer_wins(examples):
     assert "severe" in data["interpretation"]
 
 
+def test_verbosity_bias_excludes_ties(examples):
+    """A judge that always ties must not be scored as biased toward B."""
+    judge = Judge.from_callable(lambda p, a, b: "tie", name="always-tie")
+    suite = AuditSuite.from_pairs(examples)
+    rep = suite.run(judge, checks=["verbosity_bias"])
+    data = rep.checks["verbosity_bias"]
+    assert data.get("error"), "all-tie judge should produce an error, not a bias score"
+    assert data["n_ties"] == len(examples)
+
+
+def test_verbosity_bias_partial_ties(examples):
+    """When some verdicts are ties they drop out of the rate but numeric
+    metrics are still computed on decisive verdicts."""
+    import itertools
+    counter = itertools.count()
+    def judge_fn(p, a, b):
+        return ["tie", "A"][next(counter) % 2]
+    judge = Judge.from_callable(judge_fn, name="half-tie")
+    suite = AuditSuite.from_pairs(examples)
+    rep = suite.run(judge, checks=["verbosity_bias"])
+    data = rep.checks["verbosity_bias"]
+    assert data["n_ties"] > 0
+    assert data["n_decisive"] >= 2
+    assert 0.0 <= data["longer_wins_rate"] <= 1.0
+
+
 def test_agreement_with_perfect_human_match():
     exs = [
         {"prompt": "q1", "response_a": "x", "response_b": "y"},
