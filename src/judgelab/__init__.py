@@ -4,8 +4,11 @@ from judgelab.dataset import AuditSuite, Example
 from judgelab.labels import HumanLabels
 from judgelab.report import Report
 from judgelab.parallel import parallel_map
+from judgelab.rubric import generate_rubric, RubricDraft
+from judgelab.distill import DistilledJudge, distill
+from judgelab.drift import DriftMonitor, DriftAlert
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __all__ = [
     "Judge",
     "JudgeResult",
@@ -15,4 +18,10 @@ __all__ = [
     "HumanLabels",
     "Report",
     "parallel_map",
+    "generate_rubric",
+    "RubricDraft",
+    "DistilledJudge",
+    "distill",
+    "DriftMonitor",
+    "DriftAlert",
 ]

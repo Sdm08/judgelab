@@ -1,0 +1,38 @@
+name: judge-audit
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: "Path to judgelab config file"
+        default: "judgelab.yaml"
+        required: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install judgelab
+        run: pip install judgelab
+
+      - name: Run audit (CI mode)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          judgelab ci --config "${{ inputs.config || 'judgelab.yaml' }}"
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: judgelab-report
+          path: report/

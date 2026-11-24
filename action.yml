@@ -1,0 +1,39 @@
+name: "judgelab"
+description: "Audit your LLM-as-judge pipeline for bias, agreement and stability. Gate PRs on threshold breaches."
+author: "judgelab contributors"
+branding:
+  icon: "shield"
+  color: "purple"
+
+inputs:
+  config:
+    description: "Path to the judgelab YAML config"
+    required: false
+    default: "judgelab.yaml"
+  python-version:
+    description: "Python version to set up"
+    required: false
+    default: "3.11"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: pip
+
+    - name: Install judgelab
+      shell: bash
+      run: pip install judgelab
+
+    - name: Run audit (CI mode)
+      shell: bash
+      run: judgelab ci --config "${{ inputs.config }}"
+
+    - name: Upload HTML report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: judgelab-report
+        path: report/

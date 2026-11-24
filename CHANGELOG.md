@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.0] - 2026-11-24
+
+### Added
+- `generate_rubric()` with heuristic and LLM modes; infers starting rubric from labeled pairs via length, keyword-lift, and markdown signals
+- `DistilledJudge` and `distill()` — calibrate a cheap judge against teacher labels with Platt scaling
+- `DriftMonitor` with PSI for categorical streams, mean-shift for numeric; windowed alerts with severity
+- Integrations: `to_deepeval_metric`, `to_ragas_judge`, `push_report_to_langfuse`
+- GitHub Action (`action.yml`) and reusable workflow (`.github/workflows/judgelab.yml`)
+
 ## [0.3.0] - 2026-11-24
 
 ### Added

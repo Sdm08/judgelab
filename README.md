@@ -111,7 +111,7 @@ thresholds:
 
 ---
 
-## Checks (v0.3)
+## Checks (v0.4)
 
 | Check | What it measures | Key metric |
 |---|---|---|
@@ -265,14 +265,94 @@ from judgelab import parallel_map
 results = parallel_map(my_slow_fn, items, workers=16)
 ```
 
-## Roadmap
+## Auto-rubric generation (v0.4)
 
-**v0.4+**
-- Auto-rubric generation from human labels
-- Small-model judge distillation with calibration
-- Judge drift monitoring in production
-- GitHub Action marketplace entry
-- Integrations: DeepEval, Ragas, Langfuse
+Infer a starting judge rubric from human-labeled pairs:
+
+```python
+from judgelab import generate_rubric
+
+draft = generate_rubric(suite.examples, human_labels, mode="heuristic")
+print(draft.rubric)        # the inferred rubric text
+print(draft.signals)       # length ratio, keyword lift, markdown rate, ...
+```
+
+Need a nicer rubric? Pass your own LLM summarizer:
+
+```python
+draft = generate_rubric(
+    suite.examples, human_labels,
+    mode="llm",
+    llm_summarizer=lambda winners, losers, signals: my_llm(...),
+)
+```
+
+## Judge distillation (v0.4)
+
+Calibrate a cheap small-model judge against a trusted teacher (bigger model or humans):
+
+```python
+from judgelab import distill
+
+distilled = distill(small_judge, teacher_labels, suite.examples)
+cheap_judge = distilled.as_judge()   # drop-in Judge
+```
+
+Internally fits `PlattCalibrator` on the small judge's verdicts; serves calibrated probabilities with a configurable tie margin.
+
+## Drift monitor (v0.4)
+
+Watch a live judge's verdict distribution for shifts:
+
+```python
+from judgelab import DriftMonitor
+
+monitor = DriftMonitor(window=500, psi_threshold=0.2)
+monitor.set_baseline(historical_verdicts)
+
+for v in live_stream:
+    monitor.observe(v)
+
+for alert in monitor.alerts:
+    print(alert.severity, alert.distance)
+```
+
+Uses Population Stability Index (PSI) for categorical streams, mean-shift for numeric.
+
+## Integrations (v0.4)
+
+Plug judgelab judges into other eval stacks:
+
+```python
+from judgelab.integrations import (
+    to_deepeval_metric,
+    to_ragas_judge,
+    push_report_to_langfuse,
+)
+
+metric = to_deepeval_metric(judge)       # DeepEval GEval-style
+critic = to_ragas_judge(judge)           # Ragas custom metric callable
+push_report_to_langfuse(report, trace_id="...")  # ship scores to Langfuse
+```
+
+## GitHub Action (v0.4)
+
+Drop into any repo for PR-blocking audits:
+
+```yaml
+- uses: Sdm08/judgelab@main
+  with:
+    config: judgelab.yaml
+```
+
+Fails the job on threshold breach and uploads `report/` as an artifact.
+
+## Roadmap (v0.5+)
+
+- Automatic rubric *refinement* loop: generate → test → refine
+- Multi-turn judge support
+- Streamed judgment for long contexts
+- Native SQLite result store + CLI diffing
 
 ---
 
