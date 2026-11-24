@@ -99,7 +99,86 @@ Each check block always carries an `interpretation` string plus numeric metrics 
 
 ---
 
-## 4. `agreement`
+## 4a. `self_preference`
+
+Requires each example to carry `meta.model_a` and `meta.model_b` plus a `judge_model=<id>` kwarg naming which model the judge itself uses.
+
+```json
+{
+  "judge_model": "gpt-4",
+  "own_win_rate": 0.72,
+  "others_mean_win_rate": 0.48,
+  "self_preference_delta": 0.24,
+  "comparable_pairs": 100,
+  "win_rates": {"gpt-4": 0.72, "claude-3": 0.48, "llama-3": 0.49},
+  "interpretation": "severe self-preference — judge biased toward own model"
+}
+```
+
+| `delta` | Meaning |
+|---|---|
+| `< 0.05` | no self-preference |
+| `0.05–0.10` | mild |
+| `0.10–0.20` | concerning |
+| `≥ 0.20` | **severe** |
+
+## 4b. `style_bias`
+
+```json
+{
+  "markdown":   {"styled_win_rate": 0.72, "n_comparisons": 40, "interpretation": "severe — judge favours this style strongly"},
+  "confidence": {"styled_win_rate": 0.50, "n_comparisons": 40, "interpretation": "neutral — no style bias"},
+  "politeness": {"styled_win_rate": 0.58, "n_comparisons": 40, "interpretation": "mild bias"}
+}
+```
+
+Each style axis has its own `styled_win_rate`. Fair = 0.45–0.55. Over 0.70 = severe.
+
+## 4c. `rubric_stability`
+
+Requires `rubric_variants=[str,...]` and `judge_factory=callable(rubric)->Judge`.
+
+```json
+{
+  "mean_stability": 0.88,
+  "n_variants": 5,
+  "n_examples": 100,
+  "interpretation": "acceptable stability"
+}
+```
+
+| `mean_stability` | Meaning |
+|---|---|
+| `≥ 0.95` | excellent |
+| `≥ 0.85` | acceptable |
+| `≥ 0.70` | concerning |
+| `< 0.70` | **severe** |
+
+## 4d. `test_retest`
+
+### Pairwise
+```json
+{
+  "mean_verdict_stability": 0.91,
+  "repeats": 3,
+  "n_examples": 30,
+  "interpretation": "acceptable repeatability"
+}
+```
+
+### Pointwise
+```json
+{
+  "mean_score_variance": 0.08,
+  "repeats": 3,
+  "n_examples": 30,
+  "interpretation": "acceptable"
+}
+```
+
+Fix severe non-determinism: lower temperature on the underlying judge model.
+
+## 5. `agreement`
 
 Requires human labels (`AuditSuite.run(..., human_labels=HumanLabels.from_csv(...))`).
 
@@ -147,7 +226,7 @@ Requires human labels (`AuditSuite.run(..., human_labels=HumanLabels.from_csv(..
 
 ---
 
-## 5. CLI summary
+## 6. CLI summary
 
 ```
 Auditing mock-biased on 10 examples...
@@ -160,7 +239,7 @@ One line per check with the human interpretation. For numbers open the JSON; for
 
 ---
 
-## 6. HTML report
+## 7. HTML report
 
 Open `report/report.html` in any browser. Each check is a card:
 
@@ -172,7 +251,7 @@ The card shows all numeric metrics and the plain-language interpretation. The HT
 
 ---
 
-## 7. CI exit codes
+## 8. CI exit codes
 
 Threshold gating via `assert_thresholds` or the `judgelab ci` command:
 
@@ -188,7 +267,7 @@ Threshold syntax: `<check>__<metric>__<op>=value`
 
 ---
 
-## 8. Decision rules (practical)
+## 9. Decision rules (practical)
 
 | Signal | Action |
 |---|---|
@@ -201,7 +280,7 @@ Threshold syntax: `<check>__<metric>__<op>=value`
 
 ---
 
-## 9. Debugging with `per_example`
+## 10. Debugging with `per_example`
 
 Each `position_bias.per_example` entry is `{"v1": "<original>", "v2": "<swap-order, mapped back>"}`. When `v1 ≠ v2` the judge flipped on that example — inspect those prompts first. Common patterns:
 
@@ -210,7 +289,7 @@ Each `position_bias.per_example` entry is `{"v1": "<original>", "v2": "<swap-ord
 
 ---
 
-## 10. Cheat sheet
+## 11. Cheat sheet
 
 ```
 flip_rate       low  = order-invariant

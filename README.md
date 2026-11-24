@@ -111,13 +111,17 @@ thresholds:
 
 ---
 
-## Checks (v0.1)
+## Checks (v0.3)
 
 | Check | What it measures | Key metric |
 |---|---|---|
 | `position_bias` | Flip rate after swapping A/B order | `flip_rate`, `positional_preference` |
 | `verbosity_bias` | Correlation of length with winning | `length_win_correlation`, `longer_wins_rate` |
 | `agreement` | Judge vs human labels | Cohen's κ (pairwise) or Spearman ρ (pointwise) |
+| `self_preference` | Judge favours its own model's output | `self_preference_delta` |
+| `style_bias` | Judge favours markdown / confidence / politeness | `styled_win_rate` per axis |
+| `rubric_stability` | Stability across paraphrased rubrics | `mean_stability` |
+| `test_retest` | Repeatability across identical reruns | `mean_verdict_stability` / `mean_score_variance` |
 
 Every check returns a numeric score **and** a plain-English interpretation (`excellent` → `severe`).
 
@@ -216,25 +220,59 @@ See [SECURITY.md](SECURITY.md) for threat model, mitigations, and reporting proc
 
 ---
 
+## Calibration (v0.3)
+
+Align judge scores with human labels:
+
+```python
+from judgelab.calibration import PlattCalibrator, IsotonicCalibrator, tune_threshold
+
+# Pairwise judge confidence -> P(human prefers A)
+platt = PlattCalibrator().fit(judge_scores, human_labels)
+calibrated = platt.transform(new_scores)
+
+# Pointwise judge score -> human score (monotonic)
+iso = IsotonicCalibrator().fit(judge_scores, human_scores)
+
+# Pick optimal pass/fail cutoff
+res = tune_threshold(judge_scores, human_labels, metric="kappa")
+print(res.threshold, res.score)
+```
+
+## Built-in adapters (v0.3)
+
+```python
+from judgelab.adapters import (
+    openai_pairwise_judge,
+    anthropic_pairwise_judge,
+    litellm_pairwise_judge,
+)
+
+judge = openai_pairwise_judge(model="gpt-4o-mini")
+# or
+judge = anthropic_pairwise_judge(model="claude-haiku-5-5")
+# or any provider via LiteLLM
+judge = litellm_pairwise_judge(model="ollama/llama3")
+```
+
+Adapters are lazy — install only the backend you need: `pip install "judgelab[openai]"`.
+
+## Parallel execution (v0.3)
+
+```python
+from judgelab import parallel_map
+
+results = parallel_map(my_slow_fn, items, workers=16)
+```
+
 ## Roadmap
-
-**v0.2**
-- Self-preference bias
-- Style bias (markdown, confidence hedges)
-- Rubric stability (paraphrase sensitivity, few-shot shuffle)
-- Test-retest reliability
-- Async parallel judge calls
-
-**v0.3**
-- Calibration: Platt scaling, isotonic regression, threshold tuning
-- Built-in adapters: OpenAI, Anthropic, litellm
-- Integrations: DeepEval, Ragas, Langfuse
 
 **v0.4+**
 - Auto-rubric generation from human labels
 - Small-model judge distillation with calibration
 - Judge drift monitoring in production
 - GitHub Action marketplace entry
+- Integrations: DeepEval, Ragas, Langfuse
 
 ---
 

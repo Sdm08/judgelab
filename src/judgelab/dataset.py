@@ -69,6 +69,7 @@ class AuditSuite:
         judge: Judge,
         checks: list[str] | None = None,
         human_labels=None,
+        **check_kwargs,
     ) -> Report:
         from judgelab.checks import registry
 
@@ -77,7 +78,9 @@ class AuditSuite:
         for name in checks:
             if name not in registry:
                 raise KeyError(f"Unknown check: {name}. Available: {list(registry)}")
-            results[name] = registry[name](self.examples, judge, human_labels=human_labels)
+            results[name] = registry[name](
+                self.examples, judge, human_labels=human_labels, **check_kwargs
+            )
         return Report(judge_name=judge.name, n_examples=len(self.examples), checks=results)
 
 
