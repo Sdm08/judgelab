@@ -347,12 +347,91 @@ Drop into any repo for PR-blocking audits:
 
 Fails the job on threshold breach and uploads `report/` as an artifact.
 
+## Benchmarks: reproduce published judge biases
+
+`judgelab.benchmarks` ships an MT-Bench style position-bias experiment with a bundled 20-prompt fixture:
+
+```python
+from judgelab.benchmarks import run_mt_bench_position_bias
+
+res = run_mt_bench_position_bias(my_judge)
+print(res["flip_rate"], res["literature_baseline"])
+```
+
+Literature baseline (Zheng et al. 2023, Table 4):
+
+| Judge model | Flip rate |
+|---|---|
+| gpt-4 | 0.26 |
+| gpt-3.5 | 0.46 |
+| claude-v1 | 0.48 |
+| **gemma4:4.6B (local via Ollama)** | **0.55** |
+
+The last row was produced by running `examples/ollama_judge.py` against the bundled fixture on commit history for this repo — a working example of judgelab recovering the published pattern that smaller judges flip more.
+
+## Leaderboard
+
+Aggregate several audits into a Markdown table:
+
+```python
+from judgelab.benchmarks import render_leaderboard
+from judgelab.benchmarks.leaderboard import JudgeRunRow
+
+print(render_leaderboard([
+    JudgeRunRow(judge="gpt-4", flip_rate=0.26, longer_wins_rate=0.58, kappa=0.72),
+    JudgeRunRow(judge="llama3.1:8b", flip_rate=0.50, longer_wins_rate=0.60),
+]))
+```
+
+## Run history and diffing
+
+Every audit can be persisted to a local SQLite store, then diffed across judge revisions:
+
+```bash
+judgelab audit --judge v1.py --dataset eval.jsonl --store
+judgelab audit --judge v2.py --dataset eval.jsonl --store
+judgelab list
+judgelab diff 1 2        # prints per-metric deltas with arrows
+```
+
+## Auto-generate a config
+
+```bash
+judgelab init --dataset eval.jsonl --judge my_judge.py --labels human.csv --out judgelab.yaml
+```
+
+Inspects the dataset to pick the right checks and sensible thresholds.
+
+## HuggingFace datasets
+
+```python
+from judgelab import from_huggingface
+
+suite = from_huggingface(
+    "lmsys/mt_bench_human_judgments",
+    split="human",
+    revision="main",      # pin a revision for supply-chain safety
+    limit=500,
+)
+```
+
+## Reliability diagrams
+
+Calibrators also come with inline SVG diagnostics for HTML reports:
+
+```python
+from judgelab.calibration import reliability_curve, ece, render_reliability_svg
+
+rc = reliability_curve(probs, labels, n_bins=10)
+print("ECE:", ece(probs, labels))
+svg = render_reliability_svg(rc)    # embed directly into HTML
+```
+
 ## Roadmap
 
 - Automatic rubric *refinement* loop: generate → test → refine
 - Multi-turn judge support
 - Streamed judgment for long contexts
-- Native SQLite result store + CLI diffing
 - PyPI publish
 
 ---

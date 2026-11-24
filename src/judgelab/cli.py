@@ -61,6 +61,7 @@ def audit(
         help="Comma-separated check names",
     ),
     out: str = typer.Option("report", "--out", help="Output directory"),
+    store: bool = typer.Option(False, "--store", help="Persist run to SQLite history"),
 ):
     """Run audit checks, write HTML + JSON reports."""
     j = _load_judge(judge)
@@ -76,10 +77,68 @@ def audit(
     report.to_json(out_dir / "report.json")
     report.to_html(out_dir / "report.html")
 
+    if store:
+        from judgelab.store import RunStore
+        run_id = RunStore().record(report, dataset=dataset)
+        console.print(f"[green]Stored[/green] run_id={run_id}")
+
     console.print(f"[green]Wrote[/green] {out_dir}/report.html and report.json")
     for name, data in report.checks.items():
         interp = data.get("interpretation", "")
         console.print(f"  [cyan]{name}[/cyan]: {interp}")
+
+
+@app.command()
+def init(
+    dataset: str = typer.Option(..., "--dataset", help="JSONL dataset path"),
+    judge: str = typer.Option(..., "--judge", help="Judge .py path"),
+    labels: str = typer.Option(None, "--labels", help="Optional labels CSV"),
+    optional: bool = typer.Option(False, "--optional", help="Include style/test_retest"),
+    out: str = typer.Option("judgelab.yaml", "--out"),
+):
+    """Scan dataset + judge and emit a tailored judgelab.yaml."""
+    from judgelab.config_gen import auto_config
+    yaml_str = auto_config(dataset=dataset, judge=judge, labels=labels, include_optional=optional)
+    Path(out).write_text(yaml_str, encoding="utf-8")
+    console.print(f"[green]Wrote[/green] {out}")
+    console.print(yaml_str)
+
+
+@app.command()
+def diff(
+    a: int = typer.Argument(..., help="Earlier run id"),
+    b: int = typer.Argument(..., help="Later run id"),
+    db: str = typer.Option(None, "--db", help="SQLite DB path"),
+):
+    """Diff two runs stored in the SQLite run store."""
+    from judgelab.store import RunStore, DEFAULT_DB_PATH
+    store = RunStore(db or DEFAULT_DB_PATH)
+    d = store.diff(a, b)
+    console.print(f"[bold]Run {a}[/bold] ({d['judge_a']}) vs [bold]{b}[/bold] ({d['judge_b']})")
+    for check, metrics in d["checks"].items():
+        console.print(f"[cyan]{check}[/cyan]")
+        for m, vals in metrics.items():
+            if "delta" in vals:
+                arrow = "↑" if vals["delta"] > 0 else ("↓" if vals["delta"] < 0 else "·")
+                console.print(f"  {m}: {vals['a']} → {vals['b']} ({arrow} {vals['delta']:+.4f})")
+            else:
+                console.print(f"  {m}: {vals['a']} → {vals['b']}")
+
+
+@app.command(name="list")
+def list_runs(
+    limit: int = typer.Option(20, "--limit"),
+    db: str = typer.Option(None, "--db"),
+):
+    """List stored audit runs."""
+    from judgelab.store import RunStore, DEFAULT_DB_PATH
+    store = RunStore(db or DEFAULT_DB_PATH)
+    rows = store.list_runs(limit=limit)
+    if not rows:
+        console.print("(no runs stored)")
+        return
+    for r in rows:
+        console.print(f"[bold]{r.id}[/bold]  {r.created_at}  {r.judge}  n={r.n_examples}")
 
 
 @app.command()

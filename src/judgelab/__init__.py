@@ -7,6 +7,8 @@ from judgelab.parallel import parallel_map
 from judgelab.rubric import generate_rubric, RubricDraft
 from judgelab.distill import DistilledJudge, distill
 from judgelab.drift import DriftMonitor, DriftAlert
+from judgelab.store import RunStore, RunRow
+from judgelab.loaders import from_huggingface, from_pandas
 
 __version__ = "0.1.0"
 __all__ = [
@@ -24,4 +26,8 @@ __all__ = [
     "distill",
     "DriftMonitor",
     "DriftAlert",
+    "RunStore",
+    "RunRow",
+    "from_huggingface",
+    "from_pandas",
 ]
