@@ -1,4 +1,4 @@
-"""Tests for v0.4: auto-rubric, distillation, drift monitor, integrations."""
+"""Tests for auto-rubric, distillation, drift monitor, integrations."""
 import pytest
 
 from judgelab import (

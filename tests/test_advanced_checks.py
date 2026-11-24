@@ -1,4 +1,4 @@
-"""Tests for v0.2 checks: self_preference, style_bias, rubric_stability, test_retest."""
+"""Tests for self_preference, style_bias, rubric_stability, test_retest checks."""
 import pytest
 
 from judgelab import AuditSuite, Judge

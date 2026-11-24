@@ -8,7 +8,7 @@ from judgelab.rubric import generate_rubric, RubricDraft
 from judgelab.distill import DistilledJudge, distill
 from judgelab.drift import DriftMonitor, DriftAlert
 
-__version__ = "0.4.0"
+__version__ = "0.1.0"
 __all__ = [
     "Judge",
     "JudgeResult",

@@ -1,4 +1,4 @@
-"""Tests for v0.3 calibration + parallel helpers."""
+"""Tests for calibration + parallel helpers."""
 import numpy as np
 import pytest
 

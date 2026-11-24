@@ -111,7 +111,7 @@ thresholds:
 
 ---
 
-## Checks (v0.4)
+## Checks
 
 | Check | What it measures | Key metric |
 |---|---|---|
@@ -220,7 +220,7 @@ See [SECURITY.md](SECURITY.md) for threat model, mitigations, and reporting proc
 
 ---
 
-## Calibration (v0.3)
+## Calibration
 
 Align judge scores with human labels:
 
@@ -239,7 +239,7 @@ res = tune_threshold(judge_scores, human_labels, metric="kappa")
 print(res.threshold, res.score)
 ```
 
-## Built-in adapters (v0.3)
+## Built-in adapters
 
 ```python
 from judgelab.adapters import (
@@ -257,7 +257,7 @@ judge = litellm_pairwise_judge(model="ollama/llama3")
 
 Adapters are lazy — install only the backend you need: `pip install "judgelab[openai]"`.
 
-## Parallel execution (v0.3)
+## Parallel execution
 
 ```python
 from judgelab import parallel_map
@@ -265,7 +265,7 @@ from judgelab import parallel_map
 results = parallel_map(my_slow_fn, items, workers=16)
 ```
 
-## Auto-rubric generation (v0.4)
+## Auto-rubric generation
 
 Infer a starting judge rubric from human-labeled pairs:
 
@@ -287,7 +287,7 @@ draft = generate_rubric(
 )
 ```
 
-## Judge distillation (v0.4)
+## Judge distillation
 
 Calibrate a cheap small-model judge against a trusted teacher (bigger model or humans):
 
@@ -300,7 +300,7 @@ cheap_judge = distilled.as_judge()   # drop-in Judge
 
 Internally fits `PlattCalibrator` on the small judge's verdicts; serves calibrated probabilities with a configurable tie margin.
 
-## Drift monitor (v0.4)
+## Drift monitor
 
 Watch a live judge's verdict distribution for shifts:
 
@@ -319,7 +319,7 @@ for alert in monitor.alerts:
 
 Uses Population Stability Index (PSI) for categorical streams, mean-shift for numeric.
 
-## Integrations (v0.4)
+## Integrations
 
 Plug judgelab judges into other eval stacks:
 
@@ -335,7 +335,7 @@ critic = to_ragas_judge(judge)           # Ragas custom metric callable
 push_report_to_langfuse(report, trace_id="...")  # ship scores to Langfuse
 ```
 
-## GitHub Action (v0.4)
+## GitHub Action
 
 Drop into any repo for PR-blocking audits:
 
@@ -347,12 +347,13 @@ Drop into any repo for PR-blocking audits:
 
 Fails the job on threshold breach and uploads `report/` as an artifact.
 
-## Roadmap (v0.5+)
+## Roadmap
 
 - Automatic rubric *refinement* loop: generate → test → refine
 - Multi-turn judge support
 - Streamed judgment for long contexts
 - Native SQLite result store + CLI diffing
+- PyPI publish
 
 ---
 
