@@ -1,5 +1,5 @@
 name: "judgelab"
-description: "Audit your LLM-as-judge for position bias, verbosity bias, human agreement, rubric stability, and more. Block PRs on threshold breaches and upload the HTML report as a run artifact."
+description: "Audit your LLM-as-judge for bias, human agreement, and stability. Block PRs on threshold breaches."
 author: "Sdm08"
 branding:
   icon: "shield"

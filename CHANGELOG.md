@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.1] - 2026-11-25
+
+### Fixed
+- `action.yml` description trimmed to 99 chars to satisfy the GitHub Marketplace 125-char limit so the Action can be listed.
+
 ## [0.1.0] - 2026-11-24
 
 Initial release.
