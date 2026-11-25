@@ -1,8 +1,10 @@
 name: publish
 
+# Tag-trigger disabled by default so an unconfigured Trusted Publisher
+# doesn't produce failing runs when releases are tagged for Marketplace.
+# Enable by flipping to `push.tags` once the PyPI pending publisher is set up.
 on:
-  push:
-    tags: ["v*"]
+  workflow_dispatch:
 
 jobs:
   build:

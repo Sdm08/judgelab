@@ -1,6 +1,6 @@
 name: "judgelab"
-description: "Audit your LLM-as-judge pipeline for bias, agreement and stability. Gate PRs on threshold breaches."
-author: "judgelab contributors"
+description: "Audit your LLM-as-judge for position bias, verbosity bias, human agreement, rubric stability, and more. Block PRs on threshold breaches and upload the HTML report as a run artifact."
+author: "Sdm08"
 branding:
   icon: "shield"
   color: "purple"

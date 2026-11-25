@@ -337,15 +337,28 @@ push_report_to_langfuse(report, trace_id="...")  # ship scores to Langfuse
 
 ## GitHub Action
 
-Drop into any repo for PR-blocking audits:
+Available on the [GitHub Marketplace](https://github.com/marketplace/actions/judgelab). Drop into any repo for PR-blocking audits:
 
 ```yaml
-- uses: Sdm08/judgelab@main
-  with:
-    config: judgelab.yaml
+name: judge-audit
+on: [pull_request]
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Sdm08/judgelab@v0.1.0
+        with:
+          config: judgelab.yaml
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 ```
 
-Fails the job on threshold breach and uploads `report/` as an artifact.
+Inputs:
+- `config` (default `judgelab.yaml`) — path to the config file
+- `python-version` (default `3.11`)
+
+Fails the job on any threshold breach and uploads `report/` (HTML + JSON) as a workflow artifact so reviewers can click through.
 
 ## Benchmarks: reproduce published judge biases
 
